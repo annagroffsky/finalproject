@@ -1,3 +1,5 @@
+from tweepy import OAuthHandler
+from tweepy import API
 import requests
 import json
 import unittest
@@ -16,3 +18,4 @@ import os
 
 
 base_url="https://api.twitter.com/1.1/friends/list.json" 
+request_url=GET https://api.twitter.com/1.1/friends/list.json?cursor=-1&screen_name=twitterapi&skip_status=true&include_user_entities=false
