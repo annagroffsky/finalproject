@@ -71,11 +71,19 @@ def main():
 
     conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
     cur = conn.cursor()
-    cur.execute('DROP TABLE IF EXISTS Restaurants')
-    cur.execute('CREATE TABLE Restaurants (restaurants TEXT, avgrating INTEGER)')
-    cur.execute('INSERT INTO Restaurants (restaurants, avgrating) VALUES (?, ?)', ("Savas", 4.5))
-    cur.execute('INSERT INTO Restaurants (restaurants, avgrating) VALUES (?, ?)', ("Anna", 5.0))
+    cur.execute('DROP TABLE IF EXISTS Restaurant')
+    cur.execute('CREATE TABLE Restaurant (city TEXT, restaurants TEXT, avgrating INTEGER)')
+    cur.execute('INSERT INTO Restaurant (city, restaurants, avgrating) VALUES (?, ?, ?)', ("Ann Arbor", "Savas", 4.5))
+    cur.execute('INSERT INTO Restaurant (city, restaurants, avgrating) VALUES (?, ?, ?)', ("Ann Arbor", "Aventura", 5.0))
     conn.commit()
+    cur.close() 
+
+    conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/foursquare.sqlite')
+    cur = conn.cursor()
+    cur.execute('DROP TABLE IF EXISTS Foursquare Data')
+    cur.execute('CREATE TABLE Foursquare Data (city TEXT, restaurants TEXT, ratings INTEGER, busyhours TEXT)')
+    cur.execute('INSERT INTO Foursquare Data (city, restaurants, ratings, busyhours) VALUES (?, ?, ?, ?)', ("Ann Arbor", "Savas", 4.5, "6:00-10:00" ))
+    conn.commt()
     cur.close()
 
 
