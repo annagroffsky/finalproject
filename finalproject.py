@@ -74,8 +74,8 @@ def get_foursquare_object(location, restaurant_list):
         #get most popular times and day on which that occurs
         hours = client.venues.hours(venue_id)
         most_popular_hours_day = hours['popular']['timeframes'][0]['days'][0]
-        most_popular_hours_start = hours['popular']['timeframes'][0]['open'][0]['start']
-        most_popular_hours_end = hours['popular']['timeframes'][0]['open'][0]['end']
+        most_popular_hours_start = int(hours['popular']['timeframes'][0]['open'][0]['start'])
+        most_popular_hours_end = int(hours['popular']['timeframes'][0]['open'][0]['end'])
         popular_day_start_end_tup = (most_popular_hours_day, most_popular_hours_start, most_popular_hours_end)
         #add popular hours tuple to rest_list
         rest_list.append(popular_day_start_end_tup)
@@ -124,8 +124,8 @@ def main():
     conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/foursquare.sqlite')
     cur = conn.cursor()
     cur.execute('DROP TABLE IF EXISTS Foursquare')
-    cur.execute('CREATE TABLE Foursquare (city TEXT, restaurants TEXT, ratings INTEGER, busyhours TEXT)')
-    cur.execute('INSERT INTO Foursquare (city, restaurants, ratings, busyhours) VALUES (?, ?, ?, ?)', ("Ann Arbor", "Savas", 4.5, "6:00-10:00" ))
+    cur.execute('CREATE TABLE Foursquare (city TEXT, restaurants TEXT, ratings INTEGER, busyhourstart INTEGER, busyhourend INTEGER)')
+    cur.execute('INSERT INTO Foursquare (city, restaurants, ratings, busyhourstart, busyhourend) VALUES (?, ?, ?, ?, ?)', ("Ann Arbor", "Savas", 4.5, 1200, 1400))
     conn.commit()
     cur.close()
 
