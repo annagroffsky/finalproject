@@ -4,6 +4,7 @@ import requests
 import json
 import unittest
 import os
+from yelpapi import YelpAPI
 
 #define a function to go through the yelp api-produce a dictionary of key: restuarant name, value: # of 5 star reviews 
 
@@ -16,6 +17,53 @@ import os
 #visualizatoins: 1. scatterplot of # of followers vs # of 5 stars 2. map showing dots of restaurants relative to their cumulative score
 
 
+#gets parameters to be called in the yelp api--only focusing on restaurants, an input location, and getting 20 results with each call
+#returns params
+def get_search_parameters(location):
+    params = {}
+    params['term'] = 'restaurant'
+    params['location'] = location
+    params['limit'] = '20'
 
-base_url="https://api.twitter.com/1.1/friends/list.json" 
-request_url=GET https://api.twitter.com/1.1/friends/list.json?cursor=-1&screen_name=twitterapi&skip_status=true&include_user_entities=false
+    return params
+
+#takes in params and makes api request to yelp
+#retuns a dictionary called search results
+#if request doesn't work prints "exception"
+def get_yelp_data(params):
+    api_key = 'm2Fz_n7pVC_-u3GTRpW392W_IpIWLL1e7ACybtxbOIulWzuhQ1U-mSWuCmNPZepBpWAzSq6kKmL9HF-rqMGYARNXy1y1016FU6_jEEFVHtivYJQlmpNxaHdBNnrdXXYx'
+    yelp_api = YelpAPI(api_key, timeout_s=3.0)
+
+    print('Fetching for {}'.format(params["location"]))
+    try:
+        search_results = yelp_api.search_query(term = params['term'], location=params['location'], sorty_by = 'rating', limit = params['limit'])
+    except:
+            print('Exception')
+            return None
+    return search_results
+
+#returns a dictionary of restaurant name as key and rating as value
+def rating_dict(search_results):
+    rating_dict = {}
+    lst = search_results['businesses']
+    for item in lst:
+        name = item['name']
+        rating = item['rating']
+        rating_dict[name] = rating
+    return rating_dict
+
+
+
+def main():
+    #test getting the data from the api
+    param1 = get_search_parameters('Ann Arbor')
+    data1 = get_yelp_data(param1)
+    ratings= rating_dict(data1)
+    print(ratings)
+
+
+
+if __name__ == "__main__":
+    main()
+
+
