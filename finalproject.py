@@ -1,5 +1,3 @@
-from tweepy import OAuthHandler
-from tweepy import API
 import requests
 import json
 import unittest
@@ -7,7 +5,7 @@ import sqlite3
 import os
 from yelpapi import YelpAPI
 
-#define a function to go through the yelp api-produce a dictionary of key: restuarant name, value: # of 5 star reviews 
+# define a function to go through the yelp api-produce a dictionary of key: restuarant name, value: # of 5 star reviews 
 
 #define a function to go through the twitter api-take in the keys from the yelp and create either another value w/ follower or a separate dict
 
@@ -18,8 +16,8 @@ from yelpapi import YelpAPI
 #visualizatoins: 1. scatterplot of # of followers vs # of 5 stars 2. map showing dots of restaurants relative to their cumulative score
 
 
-#gets parameters to be called in the yelp api--only focusing on restaurants, an input location, and getting 20 results with each call
-#returns params
+# #gets parameters to be called in the yelp api--only focusing on restaurants, an input location, and getting 20 results with each call
+# #returns params
 def get_search_parameters(location):
     params = {}
     params['term'] = 'restaurant'
@@ -28,9 +26,9 @@ def get_search_parameters(location):
 
     return params
 
-#takes in params and makes api request to yelp
-#retuns a dictionary called search results
-#if request doesn't work prints "exception"
+# #takes in params and makes api request to yelp
+# #retuns a dictionary called search results
+# #if request doesn't work prints "exception"
 def get_yelp_data(params):
     api_key = 'm2Fz_n7pVC_-u3GTRpW392W_IpIWLL1e7ACybtxbOIulWzuhQ1U-mSWuCmNPZepBpWAzSq6kKmL9HF-rqMGYARNXy1y1016FU6_jEEFVHtivYJQlmpNxaHdBNnrdXXYx'
     yelp_api = YelpAPI(api_key, timeout_s=3.0)
@@ -43,23 +41,26 @@ def get_yelp_data(params):
             return None
     return search_results
 
-#returns a dictionary of restaurant name as key and rating as value
+# #returns a dictionary of restaurant name as key and rating as value
 def rating_dict(search_results):
-    rating_dict = {}
+    restaurant_ratings = {}
     lst = search_results['businesses']
     for item in lst:
         name = item['name']
         rating = item['rating']
-        rating_dict[name] = rating
-    return rating_dict
+        restaurant_ratings[name] = rating
+    return restaurant_ratings
 
-def yelp_database(rating_dict):
-    conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
-    cur = conn.cursor()
-    cur.execute('CREATE TABLE Restaurant Ratings (Restaurants TEXT, Avg Rating INTEGER)')
-    cur.execute('INSERT INTO Restaurant Ratings (Restaurants, Avg Rating) VALUES (?, ?)'), (rating_dict.keys(), rating_dict.values())
-    conn.commit()
-    conn.close()
+# def yelp_database():
+# conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
+# cur = conn.cursor()
+# cur.execute('DROP TABLE IF EXISTS Restaurants')
+# cur.execute('CREATE TABLE Restaurants (restaurants TEXT, avgrating INTEGER)')
+# cur.execute('INSERT INTO Restaurants (restaurants, avgrating) VALUES (?, ?)', ('Zingermans', 5))
+# cur.execute('INSERT INTO Restaurants (restaurants, avgrating) VALUES (?, ?)', ("Savas", 4.5))
+# cur.execute('INSERT INTO Restaurants (restaurants, avgrating) VALUES (?, ?)', ("Aventura", 4.8))
+# conn.commit()
+# cur.close()
 
 def main():
     #test getting the data from the api
@@ -67,6 +68,15 @@ def main():
     data1 = get_yelp_data(param1)
     ratings= rating_dict(data1)
     print(ratings)
+
+    conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
+    cur = conn.cursor()
+    cur.execute('DROP TABLE IF EXISTS Restaurants')
+    cur.execute('CREATE TABLE Restaurants (restaurants TEXT, avgrating INTEGER)')
+    cur.execute('INSERT INTO Restaurants (restaurants, avgrating) VALUES (?, ?)', ("Savas", 4.5))
+    cur.execute('INSERT INTO Restaurants (restaurants, avgrating) VALUES (?, ?)', ("Anna", 5.0))
+    conn.commit()
+    cur.close()
 
 
 
