@@ -3,6 +3,7 @@ from tweepy import API
 import requests
 import json
 import unittest
+import sqlite3
 import os
 from yelpapi import YelpAPI
 
@@ -52,7 +53,13 @@ def rating_dict(search_results):
         rating_dict[name] = rating
     return rating_dict
 
-
+def yelp_database(rating_dict):
+    conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
+    cur = conn.cursor()
+    cur.execute('CREATE TABLE Restaurant Ratings (Restaurants TEXT, Avg Rating INTEGER)')
+    cur.execute('INSERT INTO Restaurant Ratings (Restaurants, Avg Rating) VALUES (?, ?)'), (rating_dict.keys(), rating_dict.values())
+    conn.commit()
+    conn.close()
 
 def main():
     #test getting the data from the api
