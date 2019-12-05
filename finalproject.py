@@ -4,6 +4,8 @@ import unittest
 import sqlite3
 import os
 from yelpapi import YelpAPI
+import foursquare
+import time
 
 # define a function to go through the yelp api-produce a dictionary of key: restuarant name, value: # of 5 star reviews 
 
@@ -51,6 +53,45 @@ def rating_dict(search_results):
         restaurant_ratings[name] = rating
     return restaurant_ratings
 
+#returns a dictionary fs_restaurant_info_dict
+#keys are the passed restaurant names
+#values are a tuple with most popular hours for the venue and the day on which they occur
+    #Monday = 1... Sunday = 7
+
+def get_foursquare_object(location, restaurant_list):
+    # Construct the client object
+    CLIENT_ID = u'DAJHGJUV1YKN0VP3HCPIMD0DW24CPOEC2UKODDBUGRV2JE0B'
+    CLIENT_SECRET = u'GIRNY4CEVWD1HFYGAUEIWAFHGWQ24NY5FET0IZLRNWSRKYEB'
+    client = foursquare.Foursquare(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+
+    fs_restaurant_info_dict = {}
+
+    for item in restaurant_list:
+        rest_list = []
+        #get venue id from search
+        venue_info = client.venues.search(params={'near': location, 'query': item, 'limit': 1})
+        venue_id = venue_info['venues'][0]['id']
+        #get most popular times and day on which that occurs
+        hours = client.venues.hours(venue_id)
+        most_popular_hours_day = hours['popular']['timeframes'][0]['days'][0]
+        most_popular_hours_start = hours['popular']['timeframes'][0]['open'][0]['start']
+        most_popular_hours_end = hours['popular']['timeframes'][0]['open'][0]['end']
+        popular_day_start_end_tup = (most_popular_hours_day, most_popular_hours_start, most_popular_hours_end)
+        #add popular hours tuple to rest_list
+        rest_list.append(popular_day_start_end_tup)
+        
+        #get average rating
+        details = client.venues(venue_id)
+        rating = details['venue']['rating']
+        #divide by 2 to compare to yelp's ratings
+        adjusted_rating = rating/2
+        #add adjusted_rating to rest_list
+        rest_list.append(adjusted_rating)
+        #add rest_list to dictionary
+        fs_restaurant_info_dict[item] = rest_list
+        
+    return fs_restaurant_info_dict
+
 # def yelp_database():
 # conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
 # cur = conn.cursor()
@@ -68,6 +109,8 @@ def main():
     data1 = get_yelp_data(param1)
     ratings= rating_dict(data1)
     print(ratings)
+    restaurants = ['Aventura', 'Savas']
+    print(get_foursquare_object('Ann Arbor', restaurants))
 
     conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
     cur = conn.cursor()
