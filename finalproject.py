@@ -109,27 +109,48 @@ def main():
     data1 = get_yelp_data(param1)
     ratings= rating_dict(data1)
     print(ratings)
-    restaurants = ['Aventura', 'Savas']
-    print(get_foursquare_object('Ann Arbor', restaurants))
+    # restaurants = ['Aventura', 'Savas']
+    # print(get_foursquare_object('Ann Arbor', restaurants))
+
+
 
     conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
     cur = conn.cursor()
+    city = "Ann Arbor"
     cur.execute('DROP TABLE IF EXISTS Restaurant')
     cur.execute('CREATE TABLE Restaurant (city TEXT, restaurants TEXT, avgrating INTEGER)')
-    cur.execute('INSERT INTO Restaurant (city, restaurants, avgrating) VALUES (?, ?, ?)', ("Ann Arbor", "Savas", 4.5))
-    cur.execute('INSERT INTO Restaurant (city, restaurants, avgrating) VALUES (?, ?, ?)', ("Ann Arbor", "Aventura", 5.0))
-    conn.commit()
-    cur.close() 
+    for k, v in ratings.items():
+        cur.execute('INSERT INTO Restaurant (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
 
-    conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/foursquare.sqlite')
-    cur = conn.cursor()
-    cur.execute('DROP TABLE IF EXISTS Foursquare')
-    cur.execute('CREATE TABLE Foursquare (city TEXT, restaurants TEXT, ratings INTEGER, busyhourstart INTEGER, busyhourend INTEGER)')
-    cur.execute('INSERT INTO Foursquare (city, restaurants, ratings, busyhourstart, busyhourend) VALUES (?, ?, ?, ?, ?)', ("Ann Arbor", "Savas", 4.5, 1200, 1400))
+    #for loop for foursquare
     conn.commit()
     cur.close()
+    
+    
+    
+    # cur.execute('INSERT INTO Restaurant (city, restaurants, avgrating) VALUES (?, ?, ?)', ("Ann Arbor", "Aventura", 5.0))
+    # conn.commit()
+    # cur.close() 
 
+    # conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/foursquare.sqlite')
+    # # cur = conn.cursor()
+    # cur.execute('DROP TABLE IF EXISTS Foursquare')
+    # cur.execute('CREATE TABLE Foursquare (city TEXT, restaurants TEXT, ratings INTEGER, busyhourstart INTEGER, busyhourend INTEGER)')
+    # cur.execute('INSERT INTO Foursquare (city, restaurants, ratings, busyhourstart, busyhourend) VALUES (?, ?, ?, ?, ?)', ("Ann Arbor", "Savas", 4.5, 1200, 1400))
+    # conn.commit()
+    # cur.close()
 
+    #check the start of every time you run: if statement :)
+
+    #increment the request 
+
+    #UNIQUE 
+
+    #if not in database, insert
+
+    #set max as 100 then do if statements 
+
+    #if length< xyz then add 20 * 4
 
 if __name__ == "__main__":
     main()
