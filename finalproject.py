@@ -80,10 +80,10 @@ def main():
 
     conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/foursquare.sqlite')
     cur = conn.cursor()
-    cur.execute('DROP TABLE IF EXISTS Foursquare Data')
-    cur.execute('CREATE TABLE Foursquare Data (city TEXT, restaurants TEXT, ratings INTEGER, busyhours TEXT)')
-    cur.execute('INSERT INTO Foursquare Data (city, restaurants, ratings, busyhours) VALUES (?, ?, ?, ?)', ("Ann Arbor", "Savas", 4.5, "6:00-10:00" ))
-    conn.commt()
+    cur.execute('DROP TABLE IF EXISTS Foursquare')
+    cur.execute('CREATE TABLE Foursquare (city TEXT, restaurants TEXT, ratings INTEGER, busyhours TEXT)')
+    cur.execute('INSERT INTO Foursquare (city, restaurants, ratings, busyhours) VALUES (?, ?, ?, ?)', ("Ann Arbor", "Savas", 4.5, "6:00-10:00" ))
+    conn.commit()
     cur.close()
 
 
