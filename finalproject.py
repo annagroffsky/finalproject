@@ -108,8 +108,10 @@ def main():
     
     conn = sqlite3.connect('/Users/kristenpicard/Desktop/ratings.sqlite')
     cur = conn.cursor()
-    cur.execute('DROP TABLE IF EXISTS Restaurant')
-    cur.execute('CREATE TABLE Restaurant (city TEXT, restaurants TEXT, avgrating INTEGER)')
+    cur.execute('DROP TABLE IF EXISTS Yelp')
+    cur.execute('CREATE TABLE Yelp (city TEXT, restaurants TEXT, avgrating INTEGER)')
+    cur.execute('DROP TABLE IF EXISTS Foursquare')
+    cur.execute('CREATE TABLE Foursquare (city TEXT, restaurants TEXT, avgrating INTEGER, popularday INTEGER, startpophours INTEGER, endpophours INTEGER)')
     
     counter = 0
     
@@ -124,7 +126,7 @@ def main():
             print("Getting results 1-20")
             ratings= rating_dict(data1)
             for k, v in ratings.items():
-                cur.execute('INSERT INTO Restaurant (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+                cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
                 counter += 1
                 continue
     
@@ -138,7 +140,7 @@ def main():
             print('Getting results 21-40')
             ratings= rating_dict(data1)
             for k, v in ratings.items():
-                cur.execute('INSERT INTO Restaurant (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+                cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
                 counter += 1
                 continue
 
@@ -152,7 +154,7 @@ def main():
             print('Getting results 41-60')
             ratings= rating_dict(data1)
             for k, v in ratings.items():
-                cur.execute('INSERT INTO Restaurant (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+                cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
                 counter += 1
                 continue
     
@@ -166,7 +168,7 @@ def main():
             print('Getting results 61-80')
             ratings= rating_dict(data1)
             for k, v in ratings.items():
-                cur.execute('INSERT INTO Restaurant (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+                cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
                 counter += 1
                 continue
 
@@ -180,7 +182,7 @@ def main():
             print('Getting results 81-100')
             ratings= rating_dict(data1)
             for k, v in ratings.items():
-                cur.execute('INSERT INTO Restaurant (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+                cur.execute('INSERT INTO yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
                 counter += 1
                 continue
 
