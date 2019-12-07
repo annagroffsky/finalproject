@@ -56,37 +56,55 @@ def rating_dict(search_results):
 #values are a tuple with most popular hours for the venue and the day on which they occur
     #Monday = 1... Sunday = 7
 
-def get_foursquare_object(location, restaurant_list):
+def get_foursquare_object(location, restaurant):
     # Construct the client object
-    CLIENT_ID = u'DAJHGJUV1YKN0VP3HCPIMD0DW24CPOEC2UKODDBUGRV2JE0B'
-    CLIENT_SECRET = u'GIRNY4CEVWD1HFYGAUEIWAFHGWQ24NY5FET0IZLRNWSRKYEB'
+    CLIENT_ID = u'QYQYQPW4LKI404RYASG53YWTQX3LS3ZL5DU1QYVNISZFY0M5'
+    CLIENT_SECRET = u'YCHARN3O0XJHPFW1BGGKR2N0OOKVUHETJF5IG3QGH11OOZEQ'
     client = foursquare.Foursquare(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
     fs_restaurant_info_dict = {}
 
-    for item in restaurant_list:
-        rest_list = []
-        #get venue id from search
-        venue_info = client.venues.search(params={'near': location, 'query': item, 'limit': 1})
-        venue_id = venue_info['venues'][0]['id']
-        #get most popular times and day on which that occurs
-        hours = client.venues.hours(venue_id)
-        most_popular_hours_day = hours['popular']['timeframes'][0]['days'][0]
-        most_popular_hours_start = int(hours['popular']['timeframes'][0]['open'][0]['start'])
-        most_popular_hours_end = int(hours['popular']['timeframes'][0]['open'][0]['end'])
-        popular_day_start_end_tup = (most_popular_hours_day, most_popular_hours_start, most_popular_hours_end)
-        #add popular hours tuple to rest_list
-        rest_list.append(popular_day_start_end_tup)
+    
+    # rest_list = []
+    #get venue id from search
+    venue_info = client.venues.search(params={'near': location, 'query': restaurant, 'limit': 1})
+    venue_id = venue_info['venues'][0]['id']
+    #get most popular times and day on which that occurs
+    # hours = client.venues.hours(venue_id)
+    
+    # if hours['popular'] == None:
+    #     most_popular_hours_day = 100
+    #     most_popular_hours_start = 100
+    #     most_popular_hours_end = 100
+    # else:
+    #     most_popular_hours_day = hours['popular']['timeframes'][0]['days'][0]
         
-        #get average rating
-        details = client.venues(venue_id)
-        rating = details['venue']['rating']
+    #     if hours['popular']['timeframes'][0]['open'][0]['start'] == None:
+    #         most_popular_hours_start = 100
+    #     else: 
+    #         most_popular_hours_start = int(hours['popular']['timeframes'][0]['open'][0]['start'])
+    #     if hours['popular']['timeframes'][0]['open'][0]['end'] == None:
+    #         most_popular_hours_end = 100
+    #     else:
+    #         most_popular_hours_end = int(hours['popular']['timeframes'][0]['open'][0]['end'])
+    
+    # popular_day_start_end_tup = (most_popular_hours_day, most_popular_hours_start, most_popular_hours_end)
+    # #add popular hours tuple to rest_list
+    # rest_list.append(popular_day_start_end_tup)
+    
+    #get average rating
+    details = client.venues(venue_id)
+    rating = details['venue'][24]
+
+    if rating == None:
+        adjusted_rating = 1000
+    else:
         #divide by 2 to compare to yelp's ratings
         adjusted_rating = rating/2
-        #add adjusted_rating to rest_list
-        rest_list.append(adjusted_rating)
-        #add rest_list to dictionary
-        fs_restaurant_info_dict[item] = rest_list
+    #add adjusted_rating to rest_list
+    # rest_list.append(adjusted_rating)
+    #add rest_list to dictionary
+    fs_restaurant_info_dict[restaurant] = adjusted_rating
         
     return fs_restaurant_info_dict
 
@@ -109,12 +127,11 @@ def main():
     conn = sqlite3.connect('/Users/kristenpicard/Desktop/ratings.sqlite')
     cur = conn.cursor()
     cur.execute('DROP TABLE IF EXISTS Yelp')
-    cur.execute('CREATE TABLE Yelp (city TEXT, restaurants TEXT, avgrating INTEGER)')
+    cur.execute('CREATE TABLE Yelp (city TEXT, restaurants TEXT, avgrating REAL)')
     cur.execute('DROP TABLE IF EXISTS Foursquare')
-    cur.execute('CREATE TABLE Foursquare (city TEXT, restaurants TEXT, avgrating INTEGER, popularday INTEGER, startpophours INTEGER, endpophours INTEGER)')
+    cur.execute('CREATE TABLE Foursquare (city TEXT, restaurants TEXT, avgrating REAL)')
     
     counter = 0
-    
     
     while counter<=100:
         if counter>1 and counter%20 == 0:
@@ -126,7 +143,9 @@ def main():
             print("Getting results 1-20")
             ratings= rating_dict(data1)
             for k, v in ratings.items():
+                fs_obj1 = get_foursquare_object(city, k)
                 cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+                cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
                 counter += 1
                 continue
     
