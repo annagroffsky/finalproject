@@ -58,8 +58,8 @@ def rating_dict(search_results):
 
 def get_foursquare_object(location, restaurant):
     # Construct the client object
-    CLIENT_ID = u'BEBAAJUVQVTM15PTUP3DFUQ52FXMXEMENN3RZKF0MIGYAQJG'
-    CLIENT_SECRET = u'QQ43LLAMSWS5TD1EQP1KUPH5XCYE1MN0QCN0OLYLP3TXSLND'
+    CLIENT_ID = u'DAJHGJUV1YKN0VP3HCPIMD0DW24CPOEC2UKODDBUGRV2JE0B'
+    CLIENT_SECRET = u'GIRNY4CEVWD1HFYGAUEIWAFHGWQ24NY5FET0IZLRNWSRKYEB'
     client = foursquare.Foursquare(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
     fs_restaurant_info_dict = {}
@@ -94,7 +94,7 @@ def get_foursquare_object(location, restaurant):
     
     #get average rating
     details = client.venues(venue_id)
-    rating = details.get('rating')
+    rating = details['venue'].get('rating')
     # i think it has something to do with the underlined client  
     #bc when i tried to do it with the Venues it suggests it gave a diff error 
 
@@ -126,12 +126,14 @@ def main():
     city = 'Ann Arbor'
     offset1 = 0
     
-    conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
+    conn = sqlite3.connect('/Users/kristenpicard/Desktop/ratings.sqlite')
     cur = conn.cursor()
     cur.execute('DROP TABLE IF EXISTS Yelp')
     cur.execute('CREATE TABLE Yelp (city TEXT, restaurants TEXT, avgrating REAL)')
     cur.execute('DROP TABLE IF EXISTS Foursquare')
     cur.execute('CREATE TABLE Foursquare (city TEXT, restaurants TEXT, avgrating REAL)')
+    cur.execute('DROP TABLE IF EXISTS PowerRating')
+    cur.execute('CREATE TABLE PowerRating (restaurants TEXT, powerRating REAL)')
     
     counter = 0
     
@@ -161,7 +163,9 @@ def main():
             print('Getting results 21-40')
             ratings= rating_dict(data1)
             for k, v in ratings.items():
+                fs_obj1 = get_foursquare_object(city, k)
                 cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+                cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
                 counter += 1
                 continue
 
@@ -175,7 +179,9 @@ def main():
             print('Getting results 41-60')
             ratings= rating_dict(data1)
             for k, v in ratings.items():
+                fs_obj1 = get_foursquare_object(city, k)
                 cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+                cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
                 counter += 1
                 continue
     
@@ -189,7 +195,9 @@ def main():
             print('Getting results 61-80')
             ratings= rating_dict(data1)
             for k, v in ratings.items():
+                fs_obj1 = get_foursquare_object(city, k)
                 cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+                cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
                 counter += 1
                 continue
 
@@ -203,9 +211,17 @@ def main():
             print('Getting results 81-100')
             ratings= rating_dict(data1)
             for k, v in ratings.items():
+                fs_obj1 = get_foursquare_object(city, k)
                 cur.execute('INSERT INTO yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+                cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
                 counter += 1
                 continue
+    
+    #make joined table
+    cur.execute('SELECT Yelp.restaurants, Yelp.avgrating, Foursquare.avgrating')
+    cur.execute('FROM Yelp')
+    cur.execute('LEFT JOIN Foursquare')
+    cur.execute('ON Yelp.restaurants = Foursquare.restaurants')
 
 
     #for loop for foursquare
