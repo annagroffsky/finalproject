@@ -58,8 +58,8 @@ def rating_dict(search_results):
 
 def get_foursquare_object(location, restaurant):
     # Construct the client object
-    CLIENT_ID = u'QYQYQPW4LKI404RYASG53YWTQX3LS3ZL5DU1QYVNISZFY0M5'
-    CLIENT_SECRET = u'YCHARN3O0XJHPFW1BGGKR2N0OOKVUHETJF5IG3QGH11OOZEQ'
+    CLIENT_ID = u'BEBAAJUVQVTM15PTUP3DFUQ52FXMXEMENN3RZKF0MIGYAQJG'
+    CLIENT_SECRET = u'QQ43LLAMSWS5TD1EQP1KUPH5XCYE1MN0QCN0OLYLP3TXSLND'
     client = foursquare.Foursquare(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
     fs_restaurant_info_dict = {}
@@ -94,7 +94,9 @@ def get_foursquare_object(location, restaurant):
     
     #get average rating
     details = client.venues(venue_id)
-    rating = details['venue'][24]
+    rating = details.get('rating')
+    # i think it has something to do with the underlined client  
+    #bc when i tried to do it with the Venues it suggests it gave a diff error 
 
     if rating == None:
         adjusted_rating = 1000
@@ -124,7 +126,7 @@ def main():
     city = 'Ann Arbor'
     offset1 = 0
     
-    conn = sqlite3.connect('/Users/kristenpicard/Desktop/ratings.sqlite')
+    conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
     cur = conn.cursor()
     cur.execute('DROP TABLE IF EXISTS Yelp')
     cur.execute('CREATE TABLE Yelp (city TEXT, restaurants TEXT, avgrating REAL)')
