@@ -1,30 +1,49 @@
+import sqlite3
+import json 
 import matplotlib
 import matplotlib.pyplot as pyplot
+import numpy as np
 
-# power ratings 
-r = arrange(5, 10, 15, 20)
-c = arrange(10, 20, 30, 40, 50)
+#connect to database
+# conn = sqlite3.connect("powerRating.sqlite")
+# cur = conn.cursor()
 
-plt.bar(r,c, align="center", alpha = 0.5)
-plt.xticks(r, c)
+# cur.execute("SELECT * FROM ")
+# #make a dict so {restaurant: yelp}
+# comparison1 = {}
+# # for row in cur: 
+   
+# #name a text file and write the results to that 
+# # with open('.text', 'w') as outfile: 
+# #     json.dump(power_ratings, outfile)
+# #make a dict so {restaurant: 4square}
+# cur.execute("SELECT FROM")
+# comparison2 = {}
 
-plt.xlabel('Power Rating')
-plt.ylabel('# of AA Restaurants')
-plt.title ('AA Restaurant Power Ratings')
-plt.show()
+# #assign x axis to rating number and y to number of restaurants 
+# x_restaurants = comparison1.values()
+# y_ratings = comparison2.values()
 
-# 4s vs yelp
-r = 
-c =
+# #formatting
+# index = np.arrange(len(x_restaurants))
+# plt.plot(index, width=".5", color=["red"])
+# plt.xticks(index, fontsize=4)
 
-plt.plot(r,c)
+# #naming axes 
+# plt.xlabel("Yelp Ratings")
+# plt.ylabel("Foursquare Ratings")
+# plt.title("Comparison of Yelp and Foursquare Ratings of AA Restaurants")
 
-plt.xlabel('Yelp')
-plt.ylabel('Foursquare')
-plt.title('Yelp vs Foursquare Reviews')
-plt.show()
+# #where to save the figure 
+# plt.savefig("comparison.png")
+
+# plt.show()
 
 
-#cur.fetchall() = list of tuples of each row 
-
-#https://www.dataquest.io/blog/python-pandas-databases/
+    cur.execute('DROP TABLE IF EXISTS PowerRating')
+    cur.execute('CREATE TABLE PowerRating (restaurants TEXT, yelpRating REAL, foursquareRating REAL, powerRating REAL)')
+    
+    cur.execute('SELECT Yelp.restaurants, Yelp.avgrating, Foursquare.avgrating')
+    cur.execute('FROM Yelp')
+    cur.execute('LEFT OUTER JOIN Foursquare')
+    cur.execute('ON Yelp.restaurants = Foursquare.restaurants')
