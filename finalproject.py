@@ -42,7 +42,7 @@ def get_yelp_data(params):
     return search_results
 
 # #returns a dictionary of restaurant name as key and rating as value
-def rating_dict(search_results):
+def yelp_rating_dict(search_results):
     restaurant_ratings = {}
     lst = search_results['businesses']
     for item in lst:
@@ -51,51 +51,86 @@ def rating_dict(search_results):
         restaurant_ratings[name] = rating
     return restaurant_ratings
 
-#returns a dictionary fs_restaurant_info_dict
-#keys are the passed restaurant names
-#values are a tuple with most popular hours for the venue and the day on which they occur
-    #Monday = 1... Sunday = 7
+#returns a dictionary of restaurant as key and price tier as value
+def yelp_price_tier_dict(search_results):
+    price_tier_dict = {}
+    lst = search_results['businesses']
+    for item in lst:
+        name = item['name']
+        price_tier = item.get('price')
+        price_tier_dict[name] = price_tier
+    return price_tier_dict
 
-def get_foursquare_object(location, restaurant):
-    # Construct the client object
-    CLIENT_ID = u'OO3LVQ50PEU241GACB3GMFGOQCEMBBGMJKXHFP1IYO2MECOI'
-    CLIENT_SECRET = u'TXQPMS1KMG4DBNFFAA4OBEMEEJG3FW0SNPPGZ0IKGNLQIRE1'
+
+#returns the search info for the passed restaurant
+# def get_foursquare_object(location, restaurant):
+#     # Construct the client object
+#     CLIENT_ID = u'OO3LVQ50PEU241GACB3GMFGOQCEMBBGMJKXHFP1IYO2MECOI'
+#     CLIENT_SECRET = u'TXQPMS1KMG4DBNFFAA4OBEMEEJG3FW0SNPPGZ0IKGNLQIRE1'
+#     client = foursquare.Foursquare(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+
+#     #get venue id from search
+#     venue_info = client.venues.search(params={'near': location, 'query': restaurant, 'limit': 1})
+#     venue_id = venue_info['venues'][0]['id']
+#     return venue_info
+
+#returns dictionary where restaurant is key and fs rating is value
+def fs_rating_dict(location, restaurant):
+    CLIENT_ID = u'0XWYP0COUDY2EOQCU0MUXIBRCFXPQUJRAOGFOHINZUONMSL0'
+    CLIENT_SECRET = u'4QJNVNR1ZMZQMIZSHF2FZ3ZEBOORMAG0CAW4J1POQU5Y2UP0'
     client = foursquare.Foursquare(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
-    fs_restaurant_info_dict = {}
-
-    
-    # rest_list = []
     #get venue id from search
     venue_info = client.venues.search(params={'near': location, 'query': restaurant, 'limit': 1})
+    venue_id = venue_info['venues'][0]['id']
+    rating_dict = {}
     if len(venue_info['venues']) == 0:
-        fs_restaurant_info_dict[restaurant] = 1000
-        return fs_restaurant_info_dict
+        rating_dict[restaurant] = 1000
+        return rating_dict
     else:
         venue_id = venue_info['venues'][0]['id']
         #get average rating
         details = client.venues(venue_id)
         rating = details['venue'].get('rating')
-
+        
         if rating == None:
-            adjusted_rating = 1000
+            rating_dict[restaurant] = 1000
         else:
             #divide by 2 to compare to yelp's ratings
             adjusted_rating = rating/2
-            fs_restaurant_info_dict[restaurant] = adjusted_rating
+            rating_dict[restaurant] = adjusted_rating
         
-        return fs_restaurant_info_dict
+        return rating_dict
 
-# def yelp_database():
-# conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
-# cur = conn.cursor()
-# cur.execute('DROP TABLE IF EXISTS Restaurants')
-# cur.execute('CREATE TABLE Restaurants (restaurants TEXT, avgrating INTEGER)')
-# cur.execute('INSERT INTO Restaurants (restaurants, avgrating) VALUES (?, ?)', ('Zingermans', 5))
-# cur.execute('INSERT INTO Restaurants (restaurants, avgrating) VALUES (?, ?)', ("Savas", 4.5))
-# cur.execute('INSERT INTO Restaurants (restaurants, avgrating) VALUES (?, ?)', ("Aventura", 4.8))
-# conn.commit()
-# cur.close()
+#returns a dictionary where restaurant is key and price tier is value (integer 1-4)
+def fs_price_tier_dict(location, restaurant):
+    CLIENT_ID = u'0XWYP0COUDY2EOQCU0MUXIBRCFXPQUJRAOGFOHINZUONMSL0'
+    CLIENT_SECRET = u'4QJNVNR1ZMZQMIZSHF2FZ3ZEBOORMAG0CAW4J1POQU5Y2UP0'
+    client = foursquare.Foursquare(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+
+    #get venue id from search
+    venue_info = client.venues.search(params={'near': location, 'query': restaurant, 'limit': 1})
+    venue_id = venue_info['venues'][0]['id']
+
+    price_tier_dict = {}
+    
+    if len(venue_info['venues']) == 0:
+        price_tier_dict[restaurant] = 1000
+        return price_tier_dict
+    else:
+        venue_id = venue_info['venues'][0]['id']
+        details = client.venues(venue_id)
+        price = details['venue'].get('price')
+        price_tier = price.get('tier')
+
+        if price_tier == None:
+            price_tier_dict[restaurant] = 1000
+        else:
+            price_tier_dict[restaurant] = price_tier
+        
+        return price_tier_dict
+
+
 
 def main():
     # city = input("Enter a city name: ")
@@ -104,10 +139,14 @@ def main():
     
     conn = sqlite3.connect('/Users/kristenpicard/Desktop/ratings.sqlite')
     cur = conn.cursor()
-    cur.execute('DROP TABLE IF EXISTS Yelp')
-    cur.execute('CREATE TABLE Yelp (city TEXT, restaurants TEXT, avgrating REAL)')
-    cur.execute('DROP TABLE IF EXISTS Foursquare')
-    cur.execute('CREATE TABLE Foursquare (city TEXT, restaurants TEXT, avgrating REAL)')
+    cur.execute('DROP TABLE IF EXISTS YelpRating')
+    cur.execute('CREATE TABLE YelpRating (city TEXT, restaurants TEXT, avgrating REAL)')
+    cur.execute('DROP TABLE IF EXISTS YelpPrice')
+    cur.execute('CREATE TABLE YelpPrice (city TEXT, restaurants TEXT, priceTier TEXT)')
+    cur.execute('DROP TABLE IF EXISTS FoursquareRating')
+    cur.execute('CREATE TABLE FoursquareRating (city TEXT, restaurants TEXT, avgrating REAL)')
+    cur.execute('DROP TABLE IF EXISTS FoursquarePrice')
+    cur.execute('CREATE TABLE FoursquarePrice (city TEXT, restaurants TEXT, priceTier INTEGER)')
  
     counter = 0
     
@@ -117,113 +156,121 @@ def main():
             break
         
         else:
-            param1 = get_search_parameters(city, offset1)
-            data1 = get_yelp_data(param1)
+            params = get_search_parameters(city, offset1)
+            yelp_obj = get_yelp_data(params)
             print("Getting results 1-20")
-            ratings = rating_dict(data1)
-            for k, v in ratings.items():
-                cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
-                fs_obj1 = get_foursquare_object(city, k)
-                if len(fs_obj1.keys()) == 0:
-                    cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, 1000))
-                    counter += 1
-                else:
-                    cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
-                    counter += 1
+            yelp_ratings = yelp_rating_dict(yelp_obj)
+            yelp_price_tiers = yelp_price_tier_dict(yelp_obj)
             
-    while counter <= 40:
-        if counter == 40:
-            offset1 += 20
-            break
-        
-        else:
-            param1 = get_search_parameters(city, offset1)
-            data1 = get_yelp_data(param1)
-            print("Getting results 21-40")
-            ratings = rating_dict(data1)
-            for k, v in ratings.items():
-                cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
-                fs_obj1 = get_foursquare_object(city, k)
-                if len(fs_obj1.keys()) == 0:
-                    cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, 1000))
+            for k, v in yelp_ratings.items():
+                cur.execute('INSERT INTO YelpRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+                fs_obj_rating = fs_rating_dict(city, k)
+
+                if len(fs_obj_rating.keys()) == 0:
+                    cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, 1000))
+                else:
+                    cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj_rating[k]))
+            
+            for k, v in yelp_price_tiers.items(): 
+                cur.execute('INSERT INTO YelpPrice (city, restaurants, priceTier) VALUES (?, ?, ?)', (city, k, v))
+                fs_obj_price = fs_price_tier_dict(city, k)
+
+                if len(fs_obj_price.keys()) == 0:
+                    cur.execute('INSERT INTO FoursquarePrice (city, restaurants, priceTier) VALUES (?, ?, ?)', (city, k, 1000))
                     counter += 1
                 else:
-                    cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
-                    counter += 1
-        
-    while counter <= 60:
-        if counter == 60:
-            offset1 += 20
-            break
-        
-        else:
-            param1 = get_search_parameters(city, offset1)
-            data1 = get_yelp_data(param1)
-            print("Getting results 41-60")
-            ratings = rating_dict(data1)
-            for k, v in ratings.items():
-                cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
-                fs_obj1 = get_foursquare_object(city, k)
-                if len(fs_obj1.keys()) == 0:
-                    cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, 1000))
-                    counter += 1
-                else:
-                    cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
+                    cur.execute('INSERT INTO FoursquarePrice (city, restaurants, priceTier) VALUES (?, ?, ?)', (city, k, fs_obj_price[k]))
                     counter += 1
 
 
-    while counter <= 80:
-        if counter == 80:
-            offset1 += 20
-            break
+            
+    # while counter <= 40:
+    #     if counter == 40:
+    #         offset1 += 20
+    #         break
         
-        else:
-            param1 = get_search_parameters(city, offset1)
-            data1 = get_yelp_data(param1)
-            print("Getting results 61-80")
-            ratings = rating_dict(data1)
-            for k, v in ratings.items():
-                cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
-                fs_obj1 = get_foursquare_object(city, k)
-                if len(fs_obj1.keys()) == 0:
-                    cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, 1000))
-                    counter += 1
-                else:
-                    cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
-                    counter += 1
+    #     else:
+    #         param1 = get_search_parameters(city, offset1)
+    #         data1 = get_yelp_data(param1)
+    #         print("Getting results 21-40")
+    #         ratings = rating_dict(data1)
+    #         for k, v in ratings.items():
+    #             cur.execute('INSERT INTO YelpRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+    #             fs_obj1 = get_foursquare_object(city, k)
+    #             if len(fs_obj1.keys()) == 0:
+    #                 cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, 1000))
+    #                 counter += 1
+    #             else:
+    #                 cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
+    #                 counter += 1
+        
+    # while counter <= 60:
+    #     if counter == 60:
+    #         offset1 += 20
+    #         break
+        
+    #     else:
+    #         param1 = get_search_parameters(city, offset1)
+    #         data1 = get_yelp_data(param1)
+    #         print("Getting results 41-60")
+    #         ratings = rating_dict(data1)
+    #         for k, v in ratings.items():
+    #             cur.execute('INSERT INTO YelpRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+    #             fs_obj1 = get_foursquare_object(city, k)
+    #             if len(fs_obj1.keys()) == 0:
+    #                 cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, 1000))
+    #                 counter += 1
+    #             else:
+    #                 cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
+    #                 counter += 1
+
+
+    # while counter <= 80:
+    #     if counter == 80:
+    #         offset1 += 20
+    #         break
+        
+    #     else:
+    #         param1 = get_search_parameters(city, offset1)
+    #         data1 = get_yelp_data(param1)
+    #         print("Getting results 61-80")
+    #         ratings = rating_dict(data1)
+    #         for k, v in ratings.items():
+    #             cur.execute('INSERT INTO YelpRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+    #             fs_obj1 = get_foursquare_object(city, k)
+    #             if len(fs_obj1.keys()) == 0:
+    #                 cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, 1000))
+    #                 counter += 1
+    #             else:
+    #                 cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
+    #                 counter += 1
     
-    while counter <= 100:
-        if counter == 100:
-            offset1 += 20
-            break
+    # while counter <= 100:
+    #     if counter == 100:
+    #         offset1 += 20
+    #         break
         
-        else:
-            param1 = get_search_parameters(city, offset1)
-            data1 = get_yelp_data(param1)
-            print("Getting results 81-100")
-            ratings = rating_dict(data1)
-            for k, v in ratings.items():
-                cur.execute('INSERT INTO Yelp (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
-                fs_obj1 = get_foursquare_object(city, k)
-                if len(fs_obj1.keys()) == 0:
-                    cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, 1000))
-                    counter += 1
-                else:
-                    cur.execute('INSERT INTO Foursquare (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
-                    counter += 1
+    #     else:
+    #         param1 = get_search_parameters(city, offset1)
+    #         data1 = get_yelp_data(param1)
+    #         print("Getting results 81-100")
+    #         ratings = rating_dict(data1)
+    #         for k, v in ratings.items():
+    #             cur.execute('INSERT INTO YelpRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, v))
+    #             fs_obj1 = get_foursquare_object(city, k)
+    #             if len(fs_obj1.keys()) == 0:
+    #                 cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, 1000))
+    #                 counter += 1
+    #             else:
+    #                 cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj1[k]))
+    #                 counter += 1
     
 
 
     
 
     #make joined table
-    # cur.execute('DROP TABLE IF EXISTS PowerRating')
-    # cur.execute('CREATE TABLE PowerRating (restaurants TEXT, yelpRating REAL, foursquareRating REAL, powerRating REAL)')
-    
-    # cur.execute('SELECT Yelp.restaurants, Yelp.avgrating, Foursquare.avgrating')
-    # cur.execute('FROM Yelp')
-    # cur.execute('LEFT JOIN Foursquare ON Yelp.restaurants = Foursquare.restaurants')
-    # cur.execute('ON Yelp.restaurants = Foursquare.restaurants')
+
 
 
     #for loop for foursquare
