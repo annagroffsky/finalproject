@@ -62,19 +62,19 @@ def yelp_price_tier_dict(search_results):
 
 #returns dictionary where restaurant is key and fs rating is value
 def fs_rating_dict(location, restaurant):
-    CLIENT_ID = u'DAJHGJUV1YKN0VP3HCPIMD0DW24CPOEC2UKODDBUGRV2JE0B'
-    CLIENT_SECRET = u'CDBG4J2PHRLVS3JM4KMJCGNGWBPHT4LWLAFCPXUJUVNYQAVC'
+    CLIENT_ID = u'OO3LVQ50PEU241GACB3GMFGOQCEMBBGMJKXHFP1IYO2MECOI'
+    CLIENT_SECRET = u'TXQPMS1KMG4DBNFFAA4OBEMEEJG3FW0SNPPGZ0IKGNLQIRE1'
     client = foursquare.Foursquare(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
     rating_dict = {}
     #get venue id from search
     venue_info = client.venues.search(params={'near': location, 'query': restaurant, 'limit': 1})
     if len(venue_info['venues']) == 0:
-        rating_dict[restaurant] = 1000
+        rating_dict[restaurant] = 0
         return rating_dict
     else:  
         venue_id = venue_info['venues'][0]['id']
         if len(venue_info['venues']) == 0:
-            rating_dict[restaurant] = 1000
+            rating_dict[restaurant] = 0
             return rating_dict
         else:
             venue_id = venue_info['venues'][0]['id']
@@ -83,7 +83,7 @@ def fs_rating_dict(location, restaurant):
             rating = details['venue'].get('rating')
             
             if rating == None:
-                rating_dict[restaurant] = 1000
+                rating_dict[restaurant] = 0
             else:
                 #divide by 2 to compare to yelp's ratings
                 adjusted_rating = rating/2
@@ -93,25 +93,25 @@ def fs_rating_dict(location, restaurant):
 
 #returns a dictionary where restaurant is key and price tier is value (integer 1-4)
 def fs_price_tier_dict(location, restaurant):
-    CLIENT_ID = u'DAJHGJUV1YKN0VP3HCPIMD0DW24CPOEC2UKODDBUGRV2JE0B'
-    CLIENT_SECRET = u'CDBG4J2PHRLVS3JM4KMJCGNGWBPHT4LWLAFCPXUJUVNYQAVC'
+    CLIENT_ID = u'OO3LVQ50PEU241GACB3GMFGOQCEMBBGMJKXHFP1IYO2MECOI'
+    CLIENT_SECRET = u'TXQPMS1KMG4DBNFFAA4OBEMEEJG3FW0SNPPGZ0IKGNLQIRE1'
     client = foursquare.Foursquare(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
     price_tier_dict = {}
     #get venue id from search
     venue_info = client.venues.search(params={'near': location, 'query': restaurant, 'limit': 1})
     
     if venue_info['venues'] == None:
-        price_tier_dict[restaurant] = 1000
+        price_tier_dict[restaurant] = 0
     else:
         if len(venue_info['venues']) == 0:
-            price_tier_dict[restaurant] = 1000
+            price_tier_dict[restaurant] = 0
             return price_tier_dict
         else:
             venue_id = venue_info['venues'][0]['id']
             details = client.venues(venue_id)
             price = details['venue'].get('price')
             if price == None:
-                price_tier = 1000
+                price_tier = 0
                 price_tier_dict[restaurant] = price_tier
             else:
                 price_tier = price.get('tier')
@@ -125,7 +125,7 @@ def main():
     city = input("Enter a city name: ")
     offset1 = input("Offset: ")
     
-    conn = sqlite3.connect('/Users/kristenpicard/Desktop/ratings.sqlite')
+    conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
     cur = conn.cursor()
     cur.execute("CREATE TABLE IF NOT EXISTS 'YelpRating' ('city' TEXT, 'restaurants' TEXT UNIQUE, 'avgrating' REAL)")
     cur.execute("CREATE TABLE IF NOT EXISTS 'YelpPrice' ('city' TEXT, 'restaurants' TEXT UNIQUE, 'priceTier' TEXT)")
@@ -134,7 +134,7 @@ def main():
 
  
     counter = 0
-    
+
     while counter <= 20:
         if counter == 20:
             break
@@ -151,7 +151,7 @@ def main():
                 fs_obj_rating = fs_rating_dict(city, k)
 
                 if len(fs_obj_rating.keys()) == 0:
-                    cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, 1000))
+                    cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, 0))
                 else:
                     cur.execute('INSERT INTO FoursquareRating (city, restaurants, avgrating) VALUES (?, ?, ?)', (city, k, fs_obj_rating[k]))
             
@@ -160,7 +160,7 @@ def main():
                 fs_obj_price = fs_price_tier_dict(city, k)
 
                 if len(fs_obj_price.keys()) == 0:
-                    cur.execute('INSERT INTO FoursquarePrice (city, restaurants, priceTier) VALUES (?, ?, ?)', (city, k, 1000))
+                    cur.execute('INSERT INTO FoursquarePrice (city, restaurants, priceTier) VALUES (?, ?, ?)', (city, k, 0))
                     counter += 1
                 else:
                     cur.execute('INSERT INTO FoursquarePrice (city, restaurants, priceTier) VALUES (?, ?, ?)', (city, k, fs_obj_price[k]))
