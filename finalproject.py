@@ -124,8 +124,12 @@ def fs_price_tier_dict(location, restaurant):
 def main():
     city = input("Enter a city name: ")
     offset1 = input("Offset: ")
+
+    root = os.path.dirname(os.path.abspath(__file__)) + os.sep
+    file_name = root + 'ratings.sqlite'
+
     
-    conn = sqlite3.connect('/Users/AnnaGroffsky/Desktop/ratings.sqlite')
+    conn = sqlite3.connect(file_name)
     cur = conn.cursor()
     cur.execute("CREATE TABLE IF NOT EXISTS 'YelpRating' ('city' TEXT, 'restaurants' TEXT UNIQUE, 'avgrating' REAL)")
     cur.execute("CREATE TABLE IF NOT EXISTS 'YelpPrice' ('city' TEXT, 'restaurants' TEXT UNIQUE, 'priceTier' TEXT)")
@@ -171,23 +175,17 @@ def main():
     cur.execute('SELECT YelpRating.restaurants, YelpRating.avgrating, FoursquareRating.avgrating FROM YelpRating LEFT JOIN FoursquareRating ON YelpRating.restaurants = FoursquareRating.restaurants')
 
     print('Restaurant Power Ratings')
+    calc_f = root + 'calculations.txt'
+    calculations = open(calc_f, 'w')
     for row in cur.fetchall():
         if not (row[1] and row[2]):
-            print('{} has no power rating.'.format(row[0]))
+            calculations.write('{} has no power rating '.format(row[0]))
         else:
             power_rating = row[1] + row[2]
-            print('{}: {}'.format(row[0], power_rating))
-
-        # else:
-        #     power_rating = row[1] + row[2]
-        #     print('{}: {}'.format(row[0], power_rating))
+            calculations.write('{}: {} '.format(row[0], power_rating))
 
 
-    # for row in cur:
-    #     power_rating = float(row[1]) + float(row[2])
-    #     print('{}: {}'.format(row[0], power_rating))
-
-
+    calculations.close()
     conn.commit()
     cur.close()
     
